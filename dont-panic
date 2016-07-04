@@ -58,6 +58,33 @@ display_error() {
     exit $2
 }
 
+display_message() {
+    message=(
+        " ____    ___   _   _  _  _____  "
+        "|  _ \  / _ \ | \ | |( )|_   _| "
+        "| | | || | | ||  \| ||/   | |   "
+        "| |_| || |_| || |\  |     | |   "
+        "|____/  \___/ |_| \_|     |_|   "
+        " ____    _     _   _  ___  ____ "
+        "|  _ \  / \   | \ | ||_ _|/ ___|"
+        "| |_) |/ _ \  |  \| | | || |    "
+        "|  __// ___ \ | |\  | | || |___ "
+        "|_|  /_/   \_\|_| \_||___|\____|"
+      )
+    column_count=$(tput cols)
+    row=3
+
+    tput clear
+    printf '%*s\n\n\n' "${COLUMNS:-$column_count}" '' | tr ' ' -
+    for line in "${message[@]}"; do
+      col=$(( ($column_count - ${#line}) / 2))
+      tput cup $row $col
+      printf "$line\n"
+      row=$(($row+1))
+    done
+    printf '\n\n\n%*s' "${COLUMNS:-$column_count}" '' | tr ' ' -
+    exit 0
+}
 
 #######
 # Flags
@@ -76,3 +103,5 @@ while getopts ":hv" flags; do
         :) display_error "Option -$OPTARG requires an argument" 1 ;;
     esac
 done
+
+display_message
