@@ -36,6 +36,7 @@
 script_descrip="A CLI Bash program used to display system information at shell startup."
 script_version="0.0.1"
 
+
 #################
 # Display helpers
 #################
@@ -86,6 +87,7 @@ display_message() {
     exit 0
 }
 
+
 #######
 # Flags
 #######
@@ -103,5 +105,10 @@ while getopts ":hv" flags; do
         :) display_error "Option -$OPTARG requires an argument" 1 ;;
     esac
 done
+
+
+#################
+# Display message
+#################
 
 display_message
