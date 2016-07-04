@@ -33,6 +33,7 @@
 
 # -----------------------------------------------------------------------------
 
+script_descrip="A CLI Bash program used to display system information at shell startup."
 script_version="0.0.1"
 
 #################
@@ -46,8 +47,9 @@ display_version() {
 }
 
 display_help() {
-    printf "Usage:\n\n"
-    printf "$(basename "$0") [-h] [-v] -- a program to display system info\n"
+    printf "$(basename "$0") -- $script_descrip\n\n"
+    printf "Usage:\n"
+    printf "$(basename "$0") [-h] [-v]\n"
     exit 0
 }
 
