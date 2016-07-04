@@ -30,3 +30,47 @@
 # knowledge and wisdom for two important reasons. First it's slightly
 # cheaper. And second, it has the words "Don't Panic" printed in large,
 # friendly letters on it's cover.
+
+# -----------------------------------------------------------------------------
+
+script_version="0.0.1"
+
+#################
+# Display helpers
+#################
+
+display_version() {
+    printf "Dont Panic - Version ${script_version}\n"
+    printf "Created by and licensed to Neil Smith <smith.neil.h@gmail.com>\n"
+    exit 0
+}
+
+display_help() {
+    printf "Usage:\n\n"
+    printf "$(basename "$0") [-h] [-v] -- a program to display system info\n"
+    exit 0
+}
+
+display_error() {
+    printf "$1\n" >&2
+    exit $2
+}
+
+
+#######
+# Flags
+#######
+
+case $1 in
+    --help) display_help; exit 0 ;;
+    --version) display_version; exit 0 ;;
+esac
+
+while getopts ":hv" flags; do
+    case $flags in
+        h) display_help; exit 0 ;;
+        v) display_version; exit 0 ;;
+        \?) display_error "Invalid option: -$OPTARG" 1 ;;
+        :) display_error "Option -$OPTARG requires an argument" 1 ;;
+    esac
+done
