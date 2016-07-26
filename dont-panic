@@ -60,7 +60,7 @@ display_error() {
 }
 
 display_message() {
-    message=(
+    local message=(
         " ____    ___   _   _   _  _____ "
         "|  _ \  / _ \ | \ | | ( )|_   _|"
         "| | | || | | ||  \| | |/   | |  "
@@ -72,19 +72,146 @@ display_message() {
         "|  __// ___ \ | |\  | | || |___ "
         "|_|  /_/   \_\|_| \_||___|\____|"
       )
-    column_count=$(tput cols)
-    row=3
-
+    local column_count=$(tput cols)
+    local row=0
+    
     tput clear
-    printf '%*s\n\n\n' "${COLUMNS:-$column_count}" '' | tr ' ' -
+
+    # print top bar
+    tput setaf 3
+    printf '%*s' "${COLUMNS:-$column_count}" '' | tr ' ' -
+    tput sgr0
+    ((row+=3))
+
+    # print message
+    local message_center_col="$((($column_count - ${#message[0]}) / 2))"
+
+    tput setaf 1
     for line in "${message[@]}"; do
-      col=$(( ($column_count - ${#line}) / 2))
-      tput cup $row $col
-      printf "$line\n"
-      row=$(($row+1))
+        tput cup $row $message_center_col
+        printf "$line\n"
+        ((++row))
     done
-    printf '\n\n\n%*s' "${COLUMNS:-$column_count}" '' | tr ' ' -
+    ((row+=3))
+
+    # print bottom bar
+    tput setaf 3
+    tput cup $row 0
+    printf '%*s' "${COLUMNS:-$column_count}" '' | tr ' ' -
+    tput sgr0
+    ((row+=2))
+
+    # print info
+
+    display_info "OS" "$OS" $row $column_count
+    ((row+=2))
+    display_info "Kernel" "$Kernel" $row $column_count
+    ((row+=2))
+    display_info "User" "$User" $row $column_count
+    ((row+=2))
+    display_info "Host" "$Host" $row $column_count
+    ((row+=2))
+    display_info "Shell" "$Shell" $row $column_count
+    ((row+=2))
+    display_info "Packages" "$Packages" $row $column_count
+    ((row+=2))
+    display_info "Uptime" "$Uptime" $row $column_count
+    ((row+=2))
+    display_info "Cpu" "$Cpu" $row $column_count
+    ((row+=2))
+    display_info "Ram" "$Ram" $row $column_count
+    ((row+=2))
+    display_info "GTK" "$Gtk3" $row $column_count
+    ((row+=2))
+    display_info "Icons" "$Icons" $row $column_count
+    ((row+=2))
+    display_info "Font" "$Font" $row $column_count
+
     exit 0
+}
+
+display_info() {
+    local label=$1
+    local value=$2
+    local row=$3
+    local col_count=$4
+    
+    local col="$((($col_count - ${#label} ) / 2))"
+    tput setaf 2
+    tput cup $row $col 
+    printf "$label\n"
+
+    ((row+=1))
+    col="$((($col_count - ${#value}) / 2))"
+    tput setaf 4
+    tput cup $row $col
+    printf "$value\n"
+}
+
+
+################
+# Detect Helpers
+################
+
+detect_os() {
+    OS="unknown"    
+    OS="$(cat /etc/*-release | grep PRETTY_NAME | cut -d '"' -f2)"
+}
+
+detect_kernel() {
+    Kernel="unknown"
+    Kernel="$(uname -m) $(uname -sr)"
+}
+
+detect_user() {
+    User="unknown"
+    User="$USER"
+}
+
+detect_host() {
+    Host="unknown"
+    Host="$HOSTNAME"
+}
+
+detect_shell() {
+    Shell="unknown"
+    Shell="$SHELL"
+}
+
+detect_packages() {
+    Packages="unknown"
+    Packages="$(pacman -Qq | wc -l)"
+}
+
+detect_uptime() {
+    Uptime="unknown"
+    Uptime="$(uptime | awk '{print $1}')"
+}
+
+detect_cpu() {
+    Cpu="unknown"
+    Cpu="$(less /proc/cpuinfo | grep "model name" | head -n1 | cut -d ":" -f2 | sed -e 's/^[[:space:]]*//')"
+}
+
+detect_ram() {
+    Ram="unknown"
+    Ram="$(cat /proc/meminfo | grep MemTotal | awk '{print $2 / 1024 / 1024 }') GB"
+}
+
+detect_gtk2() {
+    Gtk2="$(gsettings get org.gnome.desktop.interface gtk-theme)"
+}
+
+detect_gtk3() {
+    Gtk3="$(gsettings get org.gnome.desktop.interface gtk-theme)"
+}
+
+detect_icons() {
+    Icons="$(gsettings get org.gnome.desktop.interface icon-theme)"
+}
+
+detect_font() {
+    Font="$(gsettings get org.gnome.desktop.interface font-name)"
 }
 
 
@@ -106,9 +233,19 @@ while getopts ":hv" flags; do
     esac
 done
 
-
-#################
-# Display message
-#################
+detect_os
+detect_kernel
+detect_user
+detect_host
+detect_shell
+detect_packages
+detect_uptime
+detect_cpu
+detect_ram
+detect_gtk2
+detect_gtk3
+detect_icons
+detect_font
 
 display_message
+
